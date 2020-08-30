@@ -10,6 +10,7 @@ use Illuminate\View\Engines\PhpEngine;
 use Livewire\Exceptions\BypassViewHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Throwable;
 
 if (Application::VERSION === '7.x-dev' || version_compare(Application::VERSION, '7.0', '>=')) {
