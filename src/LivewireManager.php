@@ -5,6 +5,7 @@ namespace Livewire;
 use Illuminate\Support\Str;
 use Illuminate\Support\Fluent;
 use Illuminate\Foundation\Application;
+use Illuminate\Validation\ValidationException;
 use Livewire\Testing\TestableLivewire;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Livewire\Exceptions\ComponentNotFoundException;
@@ -106,9 +107,15 @@ class LivewireManager
 
         $this->ensureComponentHasMountMethod($instance, $resolvedParameters);
 
-        $instance->mount(...$resolvedParameters);
+        try {
+            $instance->mount(...$resolvedParameters);
+        } catch (ValidationException $e) {
+            Livewire::dispatch('failed-validation', $e->validator);
 
-        $dom = $instance->output();
+            $errors = $e->validator->errors();
+        }
+
+        $dom = $instance->output($errors ?? null);
 
         $response = new Fluent([
             'id' => $id,
@@ -230,12 +237,18 @@ HTML;
             }
         }
 
+        $nonce = isset($options['nonce']) ? " nonce=\"{$options['nonce']}\"" : '';
+
         // Adding semicolons for this JavaScript is important,
         // because it will be minified in production.
         return <<<HTML
 {$assetWarning}
 <script src="{$fullAssetPath}" data-turbolinks-eval="false"></script>
-<script data-turbolinks-eval="false">
+<script data-turbolinks-eval="false"{$nonce}>
+    if (window.livewire) {
+        console.warn('Livewire: It looks like Livewire\'s @livewireScripts JavaScript assets have already been loaded. Make sure you aren\'t loading them twice.')
+    }
+
     window.livewire = new Livewire({$jsonEncodedOptions});
     window.livewire_app_url = '{$appUrl}';
     window.livewire_token = '{$csrf}';
@@ -271,6 +284,7 @@ HTML;
                 events: component.events,
                 children: component.children,
                 checksum: component.checksum,
+                locale: component.locale,
                 name: component.name,
                 errorBag: component.errorBag,
                 redirectTo: component.redirectTo,
