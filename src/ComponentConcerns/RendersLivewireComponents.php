@@ -6,6 +6,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\View\Engines\CompilerEngine;
 use Illuminate\View\Engines\PhpEngine;
 use Livewire\Exceptions\BypassViewHandler;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -84,6 +85,8 @@ trait RendersLivewireComponents
             || $e instanceof NotFoundHttpException
             // Don't wrap "abort(500)".
             || $e instanceof HttpException
+            // Don't wrap "abort(redirect())"
+            || $e instanceof HttpResponseException
             // Don't wrap most Livewire exceptions.
             || isset($uses[BypassViewHandler::class])
         );

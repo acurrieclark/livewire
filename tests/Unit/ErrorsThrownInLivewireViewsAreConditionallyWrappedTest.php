@@ -8,6 +8,7 @@ use Livewire\Livewire;
 use Livewire\Component;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\View;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Livewire\Exceptions\BypassViewHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -52,6 +53,16 @@ class ErrorsThrownInLivewireViewsAreConditionallyWrappedTest extends TestCase
         $this->expectException(HttpException::class);
 
         Livewire::component('foo', Abort500IsThrownInComponentMountStub::class);
+
+        View::make('render-component', ['component' => 'foo'])->render();
+    }
+
+        /** @test */
+    public function errors_thrown_by_abort_redirect_function_are_not_wrapped()
+    {
+        $this->expectException(HttpResponseException::class);
+
+        Livewire::component('foo', AbortRedirectIsThrownInComponentMountStub::class);
 
         View::make('render-component', ['component' => 'foo'])->render();
     }
@@ -114,6 +125,19 @@ class Abort500IsThrownInComponentMountStub extends Component
     public function mount()
     {
         abort(500);
+    }
+
+    public function render()
+    {
+        return app('view')->make('null-view');
+    }
+}
+
+class AbortRedirectIsThrownInComponentMountStub extends Component
+{
+    public function mount()
+    {
+        abort(redirect('/'));
     }
 
     public function render()

@@ -2,8 +2,8 @@
 
 namespace Livewire;
 
-use Facade\Ignition\Views\Engines\PhpEngine;
-use Facade\Ignition\Views\Engines\CompilerEngine;
+use Illuminate\View\Engines\PhpEngine;
+use Illuminate\View\Engines\CompilerEngine;
 use Livewire\ComponentConcerns\RendersLivewireComponents;
 use Throwable;
 
